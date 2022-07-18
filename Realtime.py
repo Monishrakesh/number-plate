@@ -1,16 +1,20 @@
 import cv2
 import pytesseract
-import pandas as pd
+
+import datetime
+
+now = datetime.datetime.now()
+
 
 frameWidth = 640
-franeHeight = 480
+frameHeight = 480
 
-plateCascade = cv2.CascadeClassifier("D:\monish\haarcascade_russian_plate_number.xml")
+plateCascade = cv2.CascadeClassifier(r"D:\\monish\\haarcascade_russian_plate_number.xml")
 minArea = 500
 
 cap = cv2.VideoCapture(0)
 cap.set(3, frameWidth)
-cap.set(4, franeHeight)
+cap.set(4, frameHeight)
 cap.set(10, 150)
 count = 0
 while True:
@@ -39,7 +43,7 @@ while True:
     cv2.imshow('Locating License Plates', frame)
     cv2.drawContours(frame, [largest_rectangle[1]], 0, (255, 255, 255), 18)
 
-    pytesseract.pytesseract.tesseract_cmd = 'C:\Program Files\Tesseract-OCR\\tesseract.exe'
+    pytesseract.pytesseract.tesseract_cmd = 'C:\\Program Files\\Tesseract-OCR\\tesseract.exe'
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     blur = cv2.GaussianBlur(gray, (3, 3), 0)
     thresh = cv2.threshold(blur, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)[1]
@@ -49,14 +53,11 @@ while True:
     invert = 255 - opening
     data = pytesseract.image_to_string(invert, lang='eng', config='--psm 6')
     print("numberplate:")
-    print(data)
+    print(data, now)
+
     key = cv2.waitKey(500)
     if key == 27:
         break
-data = pd.DataFrame({'licence plate': [data]})
-datatoexcel = pd.ExcelWriter("licenceplate.xlsx", engine='xlswriter')
-data.to_excel(datatoexcel, sheet_name='numberplate')
-datatoexcel.save()
 
 cap.release()
 cv2.destroyAllWindows()
